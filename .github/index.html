@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>战术装备库 - 武器数据库</title>
+    <style>
+        /* --- 基础样式重置 --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #121212; /* 深色背景 */
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        a { text-decoration: none; color: inherit; }
+
+        /* --- 头部样式 --- */
+        header {
+            background-color: #1f1f1f;
+            border-bottom: 2px solid #4caf50; /* 军绿色 accent */
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4caf50;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- 搜索与筛选 --- */
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-grow: 1;
+            justify-content: flex-end;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            background: #2c2c2c;
+            color: white;
+            width: 250px;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            background: #333;
+            border: 1px solid #444;
+            color: #fff;
+            cursor: pointer;
+            transition: 0.3s;
+            border-radius: 4px;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: #4caf50;
+            border-color: #4caf50;
+            color: #121212;
+            font-weight: bold;
+        }
+
+        /* --- 武器网格布局 --- */
+        .armory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem 0;
+        }
+
+        /* --- 武器卡片 --- */
+        .weapon-card {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .weapon-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.2);
+            border-color: #4caf50;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 200px;
+            background-color: #2a2a2a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+            font-size: 0.9rem;
+        }
+        
+        /* 实际使用时，请用 <img> 标签替换下面的占位符样式 */
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .weapon-type {
+            font-size: 0.75rem;
+            color: #4caf50;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .weapon-name {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .weapon-stats {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #aaa;
+            border-top: 1px solid #333;
+            padding-top: 1rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stat-item span {
+            color: #fff;
+        }
+
+        /* --- 页脚 --- */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            background: #1f1f1f;
+            color: #666;
+            margin-top: 2rem;
+            font-size: 0.8rem;
+        }
+
+        /* --- 响应式调整 --- */
+        @media (max-width: 600px) {
+            .header-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .controls {
+                justify-content: center;
+            }
+            input[type="text"] {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 头部导航 -->
+    <header>
+        <div class="container header-content">
+            <div class="logo">⚔️ 战术装备库</div>
+            <div class="controls">
+                <input type="text" id="searchInput" placeholder="搜索武器名称...">
+                <button class="filter-btn active" onclick="filterSelection('all')">全部</button>
+                <button class="filter-btn" onclick="filterSelection('rifle')">突击步枪</button>
+                <button class="filter-btn" onclick="filterSelection('sniper')">狙击步枪</button>
+                <button class="filter-btn" onclick="filterSelection('pistol')">手枪</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容区域 -->
+    <main class="container">
+        <div class="armory-grid" id="weaponGrid">
+            
+            <!-- 武器卡片 1 -->
+            <div class="weapon-card" data-category="rifle">
+                <div class="card-image">
+                    <!-- 这里使用占位图，实际使用请替换 src -->
+                    <img src="your-image-path/rifle1.jpg" alt="AK-47"> 
+                </div>
+                <div class="card-body">
+                    <span class="weapon-type">突击步枪</span>
+                    <h3 class="weapon-name">AK-47</h3>
+                    <p style="color:#888; font-size: 0.9rem;">卡拉什尼科夫自动步枪，以可靠性著称。</p>
+                    <div class="weapon-stats">
+                        <div class="stat-item">伤害: <span>高</span></div>
+                        <div class="stat-item">射速: <span>中</span></div>
+                        <div class="stat-item">射程: <span>中</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 武器卡片 2 -->
+            <div class="weapon-card" data-category="rifle">
+                <div class="card-image">
+                    <img src="your-image-path/rifle2.jpg" alt="M4A1">
+                </div>
+                <div class="card-body">
+                    <span class="weapon-type">突击步枪</span>
+                    <h3 class="weapon-name">M4A1</h3>
+                    <p style="color:#888; font-size: 0.9rem;">模块化设计的卡宾枪，特种部队首选。</p>
+                    <div class="weapon-stats">
+                        <div class="stat-item">伤害: <span>中</span></div>
+                        <div class="stat-item">射速: <span>高</span></div>
+                        <div class="stat-item">射程: <span>中</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 武器卡片 3 -->
+            <div class="weapon-card" data-category="sniper">
+                <div class="card-image">
+                    <img src="your-image-path/sniper1.jpg" alt="AWM">
+                </div>
+                <div class="card-body">
+                    <span class="weapon-type">狙击步枪</span>
+                    <h3 class="weapon-name">AWM</h3>
+                    <p style="color:#888; font-size: 0.9rem;">高精度栓动狙击步枪，使用 .338 马格南子弹。</p>
+                    <div class="weapon-stats">
+                        <div class="stat-item">伤害: <span>极高</span></div>
+                        <div class="stat-item">射速: <span>低</span></div>
+                        <div class="stat-item">射程: <span>极远</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 武器卡片 4 -->
+            <div class="weapon-card" data-category="pistol">
+                <div class="card-image">
+                    <img src="your-image-path/pistol1.jpg" alt="Glock-18">
+                </div>
+                <div class="card-body">
+                    <span class="weapon-type">手枪</span>
+                    <h3 class="weapon-name">Glock-18</h3>
+                    <p style="color:#888; font-size: 0.9rem;">紧凑型半自动手枪，射速快，适合近战。</p>
+                    <div class="weapon-stats">
+                        <div class="stat-item">伤害: <span>低</span></div>
+                        <div class="stat-item">射速: <span>高</span></div>
+                        <div class="stat-item">射程: <span>近</span></div>
+                    </div>
+                </div>
+            </div>
+
+             <!-- 武器卡片 5 -->
+             <div class="weapon-card" data-category="sniper">
+                <div class="card-image">
+                    <img src="your-image-path/sniper2.jpg" alt="Kar98k">
+                </div>
+                <div class="card-body">
+                    <span class="weapon-type">狙击步枪</span>
+                    <h3 class="weapon-name">Kar98k</h3>
+                    <p style="color:#888; font-size: 0.9rem;">二战经典栓动步枪，一击必杀。</p>
+                    <div class="weapon-stats">
+                        <div class="stat-item">伤害: <span>高</span></div>
+                        <div class="stat-item">射速: <span>低</span></div>
+                        <div class="stat-item">射程: <span>远</span></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer>
+        <p>© 2026 战术装备库系统 | 仅供展示用途</p>
+    </footer>
+
+    <!-- 简单的交互脚本 -->
+    <script>
+        // 搜索功能
+        const searchInput = document.getElementById('searchInput');
+        const cards = document.querySelectorAll('.weapon-card');
+
+        searchInput.addEventListener('keyup', (e) => {
+            const term = e.target.value.toLowerCase();
+            cards.forEach(card => {
+                const name = card.querySelector('.weapon-name').textContent.toLowerCase();
+                if(name.includes(term)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // 筛选功能
+        function filterSelection(category) {
+            // 更新按钮状态
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 筛选逻辑
+            cards.forEach(card => {
+                if (category === 'all' || card.getAttribute('data-category') === category) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
